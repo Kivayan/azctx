@@ -1,5 +1,9 @@
 # Azure CLI Context Manager (azctx)
 
+![Python](https://img.shields.io/badge/python-3.11+-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-green)
+![GitHub Release](https://img.shields.io/github/v/release/Kivayan/azctx?include_prereleases)
+
 **Azure CLI Account Context Switcher** - A fast, convenient CLI tool for managing and switching between multiple Azure CLI account contexts with friendly names.
 
 ## Overview

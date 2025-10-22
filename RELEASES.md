@@ -44,7 +44,7 @@ The built executable will be in the `dist/` directory (typically 10-20MB).
 Create a new release with automated builds via GitHub Actions:
 
 ```powershell
-$release = "0.1.6"
+$release = "0.1.0"
 git add -A && git commit -m "Release $release"
 git tag $release
 git push origin $release
