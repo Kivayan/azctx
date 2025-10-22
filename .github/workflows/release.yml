@@ -1,0 +1,52 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Windows Executable
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        run: pip install uv
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Build executable
+        run: uv run pyinstaller --onefile src/cli.py --name azctx
+
+      - name: Check executable size
+        run: |
+          $size = (Get-Item dist/azctx.exe).Length / 1MB
+          Write-Output "Executable size: $size MB"
+          if ($size -gt 50) {
+            Write-Error "Executable exceeds 50MB limit (SC-011)"
+            exit 1
+          }
+
+      - name: Package executable
+        run: |
+          Compress-Archive -Path dist/azctx.exe -DestinationPath azctx-${{ github.ref_name }}-windows.zip
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ github.ref_name }} azctx-${{ github.ref_name }}-windows.zip --generate-notes

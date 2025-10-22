@@ -1,0 +1,71 @@
+# GitHub Actions Workflow Contract: Release Builds
+# User Story 6 - Build and Distribute Standalone Executable
+
+name: Build and Release
+
+# Trigger: Version tags matching v*.*.* pattern (e.g., v1.0.0, v1.2.3)
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build Windows Executable
+    runs-on: windows-latest
+
+    steps:
+      # Step 1: Checkout source code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Python 3.11
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Step 3: Install UV package manager
+      - name: Install UV
+        run: pip install uv
+
+      # Step 4: Install project dependencies
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      # Step 5: Build standalone executable with PyInstaller
+      - name: Build executable
+        run: uv run pyinstaller --onefile src/cli.py --name azctx
+
+      # Step 6: Verify executable size (must be < 50MB per SC-011)
+      - name: Check executable size
+        run: |
+          $size = (Get-Item dist/azctx.exe).Length / 1MB
+          Write-Output "Executable size: $size MB"
+          if ($size -gt 50) {
+            Write-Error "Executable exceeds 50MB limit (SC-011)"
+            exit 1
+          }
+
+      # Step 7: Package executable into versioned zip
+      # Example: azctx-v1.0.0-windows.zip
+      - name: Package executable
+        run: |
+          Compress-Archive -Path dist/azctx.exe -DestinationPath azctx-${{ github.ref_name }}-windows.zip
+
+      # Step 8: Create GitHub Release with zip file attached
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: azctx-${{ github.ref_name }}-windows.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+# Success Criteria:
+# - SC-009: Build completes without errors
+# - SC-010: Workflow completes within 10 minutes
+# - SC-011: Executable is under 50MB
+# - FR-022: Triggered on version tag pushes
+# - FR-023: Creates versioned zip file
+# - FR-024: Auto-creates GitHub Release with zip attached
