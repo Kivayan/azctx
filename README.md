@@ -10,6 +10,10 @@
 
 `azctx` is a personal proof-of-concept (POC) tool that wraps Azure CLI commands to provide a better user experience when working with multiple Azure subscriptions and accounts. Instead of remembering subscription IDs or account details, you can save contexts with memorable names and quickly switch between them.
 
+Created as test of [Spec Kit](https://github.com/github/spec-kit) capabilities. I have not written a single line of code, just followed the process defined in Spec Kit + several add hoc requests. Used Model - Sonet 4.5.
+
+I have left SpecKit artifacts in the repo for reference - see specs/.
+
 ### Key Features
 
 - 🚀 **Fast context switching** - Switch between Azure accounts in seconds
