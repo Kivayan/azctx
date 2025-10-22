@@ -1,6 +1,6 @@
 ![Python](https://img.shields.io/badge/python-3.11+-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![GitHub Release](https://img.shields.io/github/v/release/Kivayan/azctx?include_prereleases)
+![GitHub Tag](https://img.shields.io/github/v/tag/Kivayan/azctx)
 
 # Azure CLI Context Manager (azctx)
 
