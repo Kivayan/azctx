@@ -553,3 +553,173 @@ def delete_context_interactive() -> dict[str, Any]:
             "error": "unknown",
         }
 
+
+def switch_context_by_id(context_id: str) -> dict[str, Any]:
+    """Switch to a saved Azure CLI context by its ID (case-sensitive).
+
+    This function provides direct, non-interactive context switching by ID.
+    It performs case-sensitive matching against saved context IDs and
+    returns detailed result information for CLI display.
+
+    Args:
+        context_id: The case-sensitive ID of the context to switch to.
+                    Leading and trailing whitespace will be trimmed before matching.
+                    Empty strings (after trimming) will result in an error.
+
+    Returns:
+        Dictionary with operation result containing these keys:
+
+        - success (bool): Whether the operation succeeded
+        - message (str): Human-readable status message for display
+        - context (Context | None): Selected Context object if successful, None on error
+        - error (str | None): Error type identifier (see Error Types below)
+        - available_ids (list[str] | None): Alphabetically sorted list of all context IDs
+                                           (only included when error == "not_found")
+
+    Raises:
+        AzureCliNotFoundError: If Azure CLI is not installed or not accessible in PATH.
+                              This is a fatal error that should terminate the program.
+
+    Error Types (value of 'error' field):
+        - None: Success (success == True)
+        - "empty_list": No contexts are saved in storage
+        - "not_found": Provided context_id doesn't match any saved context
+        - "already_active": Target context is already the active Azure account
+        - "verification_failed": Azure CLI switch command executed but verification failed
+        - "no_session": No active Azure CLI session (user needs to run 'az login')
+        - "unknown": Unexpected error occurred
+    """
+    # Trim whitespace from context_id parameter
+    context_id = context_id.strip()
+
+    # Validate context_id is not empty after trimming
+    if not context_id:
+        return {
+            "success": False,
+            "message": "Context ID cannot be empty",
+            "context": None,
+            "error": "empty_id",
+            "available_ids": None,
+        }
+
+    # Verify Azure CLI is available
+    if not azure_cli.check_azure_cli_installed():
+        raise AzureCliNotFoundError("Azure CLI is not installed or not in PATH")
+
+    # Load saved contexts
+    try:
+        contexts = storage.load_contexts()
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Failed to load contexts: {e}",
+            "context": None,
+            "error": "storage_error",
+            "available_ids": None,
+        }
+
+    # Check for empty list
+    if not contexts:
+        return {
+            "success": False,
+            "message": (
+                "No saved contexts found. "
+                "Use 'azctx add' to save your current context first."
+            ),
+            "context": None,
+            "error": "empty_list",
+            "available_ids": None,
+        }
+
+    # Use storage.get_context_by_id() for case-sensitive lookup
+    selected_context = storage.get_context_by_id(context_id)
+
+    # If not found, generate sorted available_ids list
+    if not selected_context:
+        available_ids = sorted([ctx.context_id for ctx in contexts])
+        return {
+            "success": False,
+            "message": f"Context '{context_id}' not found.",
+            "context": None,
+            "error": "not_found",
+            "available_ids": available_ids,
+        }
+
+    # Check if target context is already active
+    try:
+        current_account = azure_cli.get_current_account()
+        if current_account and current_account.get("id") == selected_context.subscription_id:
+            return {
+                "success": False,
+                "message": f"Context '{context_id}' is already active.",
+                "context": selected_context,
+                "error": "already_active",
+                "available_ids": None,
+            }
+    except NoActiveSessionError:
+        return {
+            "success": False,
+            "message": "No active Azure session. Run 'az login' first.",
+            "context": None,
+            "error": "no_session",
+            "available_ids": None,
+        }
+    except Exception:
+        # Continue with switch attempt even if current account check fails
+        pass
+
+    # Switch via azure_cli.set_account(context.subscription_id)
+    try:
+        success = azure_cli.set_account(selected_context.subscription_id)
+        if not success:
+            return {
+                "success": False,
+                "message": f"Failed to switch to context '{context_id}'.",
+                "context": selected_context,
+                "error": "switch_failed",
+                "available_ids": None,
+            }
+    except NoActiveSessionError as e:
+        return {
+            "success": False,
+            "message": str(e),
+            "context": selected_context,
+            "error": "no_session",
+            "available_ids": None,
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Failed to switch context: {e}",
+            "context": selected_context,
+            "error": "unknown",
+            "available_ids": None,
+        }
+
+    # Verify switch with azure_cli.get_current_account()
+    try:
+        current_account = azure_cli.get_current_account()
+        if current_account and current_account.get("id") != selected_context.subscription_id:
+            return {
+                "success": False,
+                "message": (
+                    f"Failed to verify switch to context '{context_id}'. "
+                    "Azure CLI returned different subscription."
+                ),
+                "context": selected_context,
+                "error": "verification_failed",
+                "available_ids": None,
+            }
+    except Exception:
+        # If verification fails but switch command succeeded, consider it a warning
+        # Still return success but note the verification issue
+        pass
+
+    # Return success
+    return {
+        "success": True,
+        "message": f"Successfully switched to context: {context_id}",
+        "context": selected_context,
+        "error": None,
+        "available_ids": None,
+    }

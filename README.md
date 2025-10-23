@@ -20,7 +20,6 @@ I have left SpecKit artifacts in the repo for reference - see specs/.
 - 🏷️ **Friendly names** - Use memorable names instead of subscription IDs
 - 📋 **Easy management** - Add, list, delete, and check status of saved contexts
 - 🎨 **Beautiful UI** - Interactive prompts with Rich terminal formatting
-- ⚡ **Performance focused** - All operations complete in under 2 seconds
 
 ## Technology Stack
 
@@ -118,6 +117,8 @@ Enter a short ID: prod
 
 ### Switch Between Contexts
 
+#### Interactive Mode
+
 Use the interactive menu to choose a context:
 
 ```bash
@@ -135,15 +136,39 @@ azctx switch
 
 Use arrow keys to navigate, Enter to select, or Esc to cancel.
 
+#### Direct Mode (Quick Switch by ID)
+
+Switch directly to a context using its ID - perfect for scripts and fast switching:
+
+```bash
+azctx switch --id prod          # Switch to context with ID "prod"
+azctx switch -i dev             # Short flag also works
+```
+
+**Note**: Context IDs are **case-sensitive** (e.g., `DEV` ≠ `dev`).
+
 **Example:**
 
 ```
-? Select a context to switch to:
-❯ Production (prod)
-  Development (dev)
-  Testing (test)
-
 ✓ Successfully Switched to Production
+┌─────────────────────────────────────┐
+│ Name: Production                    │
+│ ID: prod                            │
+│ Subscription: My Production Sub     │
+│ Tenant: my-tenant-id                │
+│ Account: user@example.com           │
+└─────────────────────────────────────┘
+```
+
+If the context ID doesn't exist, you'll see available options:
+
+```
+✗ Context Not Found
+┌─────────────────────────────────────┐
+│ Context 'staging' not found.        │
+│                                     │
+│ Available contexts: dev, prod, test │
+└─────────────────────────────────────┘
 ```
 
 ### Check Active Context

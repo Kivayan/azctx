@@ -38,13 +38,42 @@ def version_callback(value: bool) -> None:
 
 
 @app.command()
-def switch() -> None:
+def switch(
+    id: str | None = typer.Option(
+        None,
+        "--id",
+        "-i",
+        help="Context ID to switch to directly (case-sensitive). Omit for interactive selection."
+    )
+) -> None:
     """Switch to a different saved context.
 
-    Displays an interactive list of saved contexts and switches to the selected one.
+    Displays an interactive list of saved contexts (default behavior when no
+    options are provided) or switches directly to a specific context when the
+    --id option is used.
+
+    This command supports two modes:
+
+    1. Interactive Mode (default): Presents a navigable list of saved contexts
+       using keyboard navigation (arrow keys + Enter). This is the original
+       behavior and remains unchanged.
+
+    2. Direct Mode (--id flag): Switches to a specific context by its ID without
+       any interactive prompts. Useful for scripting and automation.
+
+    Examples:
+        azctx switch                 # Interactive selection
+        azctx switch --id DEV        # Direct switch to "DEV" context
+        azctx switch -i PROD         # Direct switch using short flag
     """
     try:
-        result = context_manager.switch_context_interactive()
+        # Determine which mode to use based on whether id parameter is provided
+        if id:
+            # Direct mode - switch by ID
+            result = context_manager.switch_context_by_id(id)
+        else:
+            # Interactive mode - existing behavior
+            result = context_manager.switch_context_interactive()
 
         if result["success"]:
             # Success - display green panel with context details
@@ -74,6 +103,30 @@ def switch() -> None:
                     )
                 )
                 sys.exit(130)
+            elif error_type == "already_active":
+                # Already active context - informational message (yellow)
+                console.print(
+                    Panel(
+                        result["message"],
+                        title="⚠ Already Active",
+                        border_style="yellow",
+                    )
+                )
+                sys.exit(0)  # Not an error, just informational
+            elif error_type == "not_found":
+                # Context not found - show available IDs
+                message = result["message"]
+                if result.get("available_ids"):
+                    available = ", ".join(result["available_ids"])
+                    message += f"\n\nAvailable contexts: {available}"
+                console.print(
+                    Panel(
+                        message,
+                        title="✗ Context Not Found",
+                        border_style="red",
+                    )
+                )
+                sys.exit(1)
             elif error_type in ("empty_list", "single_context"):
                 console.print(
                     Panel(
@@ -84,6 +137,7 @@ def switch() -> None:
                 )
                 sys.exit(1)
             else:
+                # All other errors (verification_failed, no_session, unknown, etc.)
                 console.print(
                     Panel(
                         result["message"],
