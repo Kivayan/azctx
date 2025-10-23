@@ -20,7 +20,7 @@ Add standalone Windows executable distribution using PyInstaller with automated 
 **Distribution**: GitHub Releases with automated builds via GitHub Actions
 **Executable Format**: Single-file .exe (PyInstaller --onefile)
 **Package Format**: Versioned zip files (azctx-{version}-windows.zip)
-**Trigger Mechanism**: Git version tags (v1.0.0, v1.1.0, etc.)
+**Trigger Mechanism**: Git version tags (1.0.0, 1.1.0, etc.)
 **Project Type**: Single Python project with CLI interface
 **Performance Goals**: Executable under 50MB, builds complete within 10 minutes
 **Constraints**: Simplicity first - minimal build configuration
@@ -118,6 +118,7 @@ CLI commands organized in `src/cli/`, models in `src/models/`, business logic in
 **Output**: `research.md` (updated with User Story 6 research)
 
 Completed research on:
+
 1. PyInstaller configuration for Typer/Questionary/Rich applications
 2. GitHub Actions workflow structure and triggers
 3. .spec file customization approach
@@ -125,6 +126,7 @@ Completed research on:
 5. Local development build workflow
 
 **Key Decisions**:
+
 - Build Tool: PyInstaller with `--onefile` mode
 - Trigger: Version tags (`v*` pattern)
 - Distribution: Automated GitHub Releases with zip packaging
@@ -134,12 +136,14 @@ Completed research on:
 ### Phase 1: Design & Contracts ✅ COMPLETE
 
 **Outputs**:
+
 1. `data-model.md` - No changes needed (no new entities for build process)
 2. `contracts/github-actions-release.yml` - GitHub Actions workflow contract
 3. `quickstart.md` - Updated with Phase 7 (build and distribution instructions)
 4. `.github/copilot-instructions.md` - Updated with PyInstaller and GitHub Actions
 
 **Artifacts Created**:
+
 - GitHub Actions workflow contract with full step-by-step specification
 - Quickstart guide section covering local builds, testing, releases
 - Documentation for troubleshooting build issues
@@ -151,6 +155,7 @@ Completed research on:
 **Post-Phase 1**: ✅ PASSED
 
 All constitutional principles satisfied. Implementation approach aligns with:
+
 - Simplicity First: Minimal configuration, standard tools
 - Modular Architecture: Build process separate from core application
 - CLI-Centric Design: Simple command-line interface for builds
@@ -162,6 +167,7 @@ All constitutional principles satisfied. Implementation approach aligns with:
 **Command**: `/speckit.tasks` or run `.specify/scripts/powershell/setup-tasks.ps1`
 
 This will generate `tasks.md` with detailed implementation tasks for User Story 6:
+
 - Adding PyInstaller dependency to pyproject.toml
 - Creating GitHub Actions workflow file
 - Updating .gitignore
@@ -173,4 +179,3 @@ This will generate `tasks.md` with detailed implementation tasks for User Story 
 **Estimated Implementation Time**: 1-2 hours
 **Estimated Testing Time**: 30 minutes
 **Total**: 1.5-2.5 hours for User Story 6 completion
-
