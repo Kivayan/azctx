@@ -254,13 +254,13 @@ The file is created automatically when you add your first context.
 
 ## Command Reference
 
-| Command | Description | Options |
-|---------|-------------|---------|
-| `azctx add` | Add current Azure CLI context | None |
-| `azctx switch` | Switch to a different saved context | None |
-| `azctx status` | Show currently active context | `--verbose, -v` |
-| `azctx list` | List all saved contexts | `--verbose, -v` |
-| `azctx delete` | Delete a saved context | None |
+| Command        | Description                         | Options         |
+| -------------- | ----------------------------------- | --------------- |
+| `azctx add`    | Add current Azure CLI context       | None            |
+| `azctx switch` | Switch to a different saved context | None            |
+| `azctx status` | Show currently active context       | `--verbose, -v` |
+| `azctx list`   | List all saved contexts             | `--verbose, -v` |
+| `azctx delete` | Delete a saved context              | None            |
 
 All commands support `--help` for detailed information.
 
@@ -270,6 +270,9 @@ All commands support `--help` for detailed information.
 
 ```
 azctx/
+├── go/                     # Go prototype port (work in progress)
+│   ├── cmd/azctx           # Go CLI entry point
+│   └── internal/           # Go prototype packages
 ├── src/                    # Source code
 │   ├── __init__.py
 │   ├── cli.py             # CLI entry point (Typer commands)
@@ -289,6 +292,17 @@ azctx/
 ├── .specify/              # Speckit framework files
 ├── pyproject.toml         # Project dependencies
 └── README.md              # This file
+```
+
+### Go Prototype
+
+A Go prototype port now lives under `go/`. It is being built alongside the Python implementation so the current Python CLI remains the behavioral reference until parity is verified.
+
+Planned local workflow once Go is installed:
+
+```bash
+cd go
+go build ./cmd/azctx
 ```
 
 ### Development Philosophy
